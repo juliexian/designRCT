@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/juliexian/designRCT/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/juliexian/designRCT/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/juliexian/designRCT/branch/main/graph/badge.svg)](https://codecov.io/gh/juliexian/designRCT?branch=main)
+[![Codecov test coverage](https://codecov.io/gh/juliexian/designRCT/graph/badge.svg)](https://app.codecov.io/gh/juliexian/designRCT)
 <!-- badges: end -->
 
 **designRCT** is an R package for comprehensive clinical trial design and planning. It provides tools for power analysis, sample size calculation, and cost estimation with support for covariate adjustment to optimize study efficiency.

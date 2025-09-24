@@ -1,16 +1,11 @@
 ---
-title: "designRCT-introduction"
+title: "Introduction to designRCT"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to designRCT}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
-# Introduction
-
-The designRCT package provides tools for clinical study design, 
-including power analysis, sample size calculation, and cost estimation.
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -23,48 +18,146 @@ knitr::opts_chunk$set(
 library(designRCT)
 ```
 
-## Basic Usage
+# Introduction
 
-### Power Analysis
-```{r power-example}
-# Calculate power for a given sample size
+The **designRCT** package provides comprehensive tools for clinical trial design, including power analysis, sample size calculation, and cost estimation. This vignette demonstrates the main functions and workflows.
+
+## Key Features
+
+- Power analysis with covariate adjustment
+- Sample size calculation for target power levels
+- Cost estimation with dropout considerations
+- Comprehensive study planning workflows
+
+# Basic Power Analysis
+
+Calculate statistical power for a given sample size:
+
+```{r power-basic}
+# Basic power analysis
 power_result <- power_analysis(
   n_per_group = 95, 
   delta = 0.5, 
-  sd = 1.8, 
-  R2 = 0.15
+  sd = 1.8
 )
 power_result
 ```
 
-### Sample Size Calculation
-```{r sample-size-example}
-# Calculate required sample size for desired power
+## Power Analysis with Covariate Adjustment
+
+Including baseline covariates can significantly improve power:
+
+```{r power-adjusted}
+# Power analysis with covariate adjustment (R² = 0.15)
+power_adjusted <- power_analysis(
+  n_per_group = 95, 
+  delta = 0.5, 
+  sd = 1.8, 
+  R2 = 0.15,
+  alternative = "one.sided",
+  verbose = TRUE
+)
+```
+
+The covariate adjustment reduces the residual standard deviation, increasing statistical power for the same sample size.
+
+# Sample Size Calculation
+
+Determine the required sample size to achieve target power:
+
+```{r sample-basic}
+# Calculate required sample size for 80% power
 sample_result <- sample_size_calc(
+  power = 0.8, 
+  delta = 0.5, 
+  sd = 1.8
+)
+sample_result
+```
+
+## Sample Size with Covariate Adjustment
+
+```{r sample-adjusted}
+# Sample size with covariate adjustment
+sample_adjusted <- sample_size_calc(
   power = 0.8, 
   delta = 0.5, 
   sd = 1.8, 
   R2 = 0.15
 )
-sample_result
+sample_adjusted
+
+# Compare sample sizes
+cat("Sample size without adjustment:", sample_result$n_per_group, "\n")
+cat("Sample size with R² = 0.15:", sample_adjusted$n_per_group, "\n")
+cat("Reduction:", sample_result$n_per_group - sample_adjusted$n_per_group, "subjects per group\n")
 ```
 
-### Cost Analysis
-```{r cost-example}
-# Estimate study costs
+# Cost Analysis
+
+Estimate study costs including variable and fixed components:
+
+```{r cost-basic}
+# Basic cost analysis
 cost_result <- cost_analysis(
   n_per_group = 95,
   cost_per_subject = 1000,
-  fixed_costs = 50000,
-  dropout_rate = 0.1
+  fixed_costs = 50000
 )
 cost_result
 ```
 
-### Comprehensive Study Planning
-```{r sample-size-example}
-# Complete study planning
-complete_plan <- plan_study(
+## Cost Analysis with Dropout Adjustment
+
+Account for expected dropout rates in cost planning:
+
+```{r cost-dropout}
+# Cost analysis with 10% dropout rate
+cost_dropout <- cost_analysis(
+  n_per_group = 95,
+  cost_per_subject = 1000,
+  fixed_costs = 50000,
+  dropout_rate = 0.1,
+  verbose = TRUE
+)
+
+# Compare costs
+cat("Total cost without dropout adjustment: $", format(cost_result$total_costs, big.mark = ","), "\n")
+cat("Total cost with 10% dropout: $", format(cost_dropout$total_costs, big.mark = ","), "\n")
+cat("Additional cost due to dropout: $", format(cost_dropout$total_costs - cost_result$total_costs, big.mark = ","), "\n")
+```
+
+# Comprehensive Study Planning
+
+The `plan_study()` function integrates power analysis, sample size calculation, and cost estimation:
+
+## Power Analysis Scenario
+
+When you have a fixed sample size and want to know the achieved power:
+
+```{r comprehensive-power}
+# Comprehensive planning for power analysis
+power_plan <- plan_study(
+  scenario = "power",
+  n_per_group = 95,
+  delta = 0.5,
+  sd = 1.8,
+  R2 = 0.15,
+  cost_per_subject = 1000,
+  fixed_costs = 50000,
+  dropout_rate = 0.1,
+  verbose = FALSE
+)
+power_plan
+```
+
+## Sample Size Scenario
+
+When you have a target power level and need to determine sample size:
+
+```{r comprehensive-sample}
+# Comprehensive planning for sample size calculation
+sample_plan <- plan_study(
   scenario = "sample_size",
   power = 0.8,
   delta = 0.5,
@@ -72,7 +165,95 @@ complete_plan <- plan_study(
   R2 = 0.15,
   cost_per_subject = 1000,
   fixed_costs = 50000,
-  dropout_rate = 0.1
+  dropout_rate = 0.1,
+  verbose = FALSE
 )
+sample_plan
 ```
 
+# Exploring Different Scenarios
+
+## Effect of Covariate Adjustment
+
+Let's examine how different levels of covariate adjustment (R²) affect sample size requirements:
+
+```{r r2-comparison}
+# Compare different R² values
+r2_values <- c(0, 0.05, 0.10, 0.15, 0.20, 0.25)
+sample_sizes <- sapply(r2_values, function(r2) {
+  result <- sample_size_calc(power = 0.8, delta = 0.5, sd = 1.8, R2 = r2, verbose = FALSE)
+  result$n_per_group
+})
+
+# Create comparison table
+comparison <- data.frame(
+  R_squared = r2_values,
+  Sample_Size_Per_Group = sample_sizes,
+  Total_Sample_Size = sample_sizes * 2,
+  Reduction_vs_No_Adjustment = sample_sizes[1] - sample_sizes
+)
+
+print(comparison)
+```
+
+## Effect of Effect Size
+
+How does the expected effect size impact required sample size?
+
+```{r effect-size-comparison}
+# Compare different effect sizes
+deltas <- c(0.2, 0.3, 0.4, 0.5, 0.6, 0.8)
+sample_sizes_delta <- sapply(deltas, function(d) {
+  result <- sample_size_calc(power = 0.8, delta = d, sd = 1.8, R2 = 0.15, verbose = FALSE)
+  result$n_per_group
+})
+
+# Create comparison table
+delta_comparison <- data.frame(
+  Effect_Size = deltas,
+  Sample_Size_Per_Group = sample_sizes_delta,
+  Total_Sample_Size = sample_sizes_delta * 2
+)
+
+print(delta_comparison)
+```
+
+# Study Design Recommendations
+
+Based on the analyses above, here are key recommendations for efficient study design:
+
+## 1. Covariate Adjustment Benefits
+- Even modest covariate adjustment (R² = 0.10-0.15) can reduce sample size requirements by 10-15%
+- Identify strong baseline predictors of the outcome to maximize R²
+- Common effective covariates include baseline outcome measures, age, and disease severity
+
+## 2. Effect Size Considerations
+- Larger effect sizes dramatically reduce required sample sizes
+- Conservative effect size estimates help ensure adequate power
+- Consider the minimum clinically important difference when setting δ
+
+## 3. Cost Optimization
+- Factor in dropout rates early in planning (typically 5-15% depending on study duration)
+- Balance fixed vs. variable costs when determining optimal sample size
+- Consider the cost-effectiveness of covariate collection vs. increased sample size
+
+## 4. One-sided vs. Two-sided Tests
+- One-sided tests require smaller sample sizes but must be pre-specified and justified
+- Use two-sided tests unless there is strong scientific rationale for directional hypothesis
+
+# Conclusion
+
+The designRCT package provides a comprehensive toolkit for clinical trial planning. Key advantages include:
+
+- **Integrated workflow**: Power, sample size, and cost analyses in one framework
+- **Covariate adjustment**: Leverage baseline measurements to improve efficiency  
+- **Flexible scenarios**: Support for various study designs and parameters
+- **Cost awareness**: Explicit consideration of study economics in planning
+
+For additional help and examples, see the function documentation:
+```{r help, eval=FALSE}
+?power_analysis
+?sample_size_calc  
+?cost_analysis
+?plan_study
+```
