@@ -1,0 +1,78 @@
+---
+title: "designRCT-introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to designRCT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+The designRCT package provides tools for clinical study design, 
+including power analysis, sample size calculation, and cost estimation.
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(designRCT)
+```
+
+## Basic Usage
+
+### Power Analysis
+```{r power-example}
+# Calculate power for a given sample size
+power_result <- power_analysis(
+  n_per_group = 95, 
+  delta = 0.5, 
+  sd = 1.8, 
+  R2 = 0.15
+)
+power_result
+```
+
+### Sample Size Calculation
+```{r sample-size-example}
+# Calculate required sample size for desired power
+sample_result <- sample_size_calc(
+  power = 0.8, 
+  delta = 0.5, 
+  sd = 1.8, 
+  R2 = 0.15
+)
+sample_result
+```
+
+### Cost Analysis
+```{r cost-example}
+# Estimate study costs
+cost_result <- cost_analysis(
+  n_per_group = 95,
+  cost_per_subject = 1000,
+  fixed_costs = 50000,
+  dropout_rate = 0.1
+)
+cost_result
+```
+
+### Comprehensive Study Planning
+```{r sample-size-example}
+# Complete study planning
+complete_plan <- plan_study(
+  scenario = "sample_size",
+  power = 0.8,
+  delta = 0.5,
+  sd = 1.8,
+  R2 = 0.15,
+  cost_per_subject = 1000,
+  fixed_costs = 50000,
+  dropout_rate = 0.1
+)
+```
+

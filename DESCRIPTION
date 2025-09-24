@@ -1,0 +1,23 @@
+Package: designRCT
+Type: Package
+Title: Implementation of Randomized Clinical Trial Study Design
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Julie", "Xian",
+      email = "jxian2@jh.edu",
+      role = c("aut", "cre")
+    )
+  )
+Description: Power and sample size calculations for clinical studies using t-tests or ANCOVA, 
+    with options for covariate adjustment and one- or two-sided tests.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.3.3
+VignetteBuilder: knitr
